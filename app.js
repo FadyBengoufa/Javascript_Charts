@@ -9,16 +9,119 @@ window.onload = function getData(){
              */
             var data = JSON.parse(xhttp.response);
 
+            /** 
+             * LINE CHART DATA 
+             */
+            var dataAgeSalary = [];
+            var salaryStringDollar,salaryString,salary;
+
+             for (let i = 0; i < data.length; i++) {
+                 const element = data[i];
+                //remove the $ from the string
+                 salaryStringDollar = element.balance.replace('$','');
+                 //remove the , from the string
+                 salaryString = salaryStringDollar.replace(',','');
+                //change from string to float
+                 salary = parseFloat(salaryString);
+                //Add the data to the array after cleaning it
+                dataAgeSalary.push({
+                    x:element.age,
+                    y:salary
+                });
+                 
+             }
+              /**
+              * Sorting the array by writing the compare function for the Age
+              */
+                function compareAge(a,b){
+                    if(a.x < b.x)return -1;
+                    else if(a.x > b.x) return 1;
+                    else return 0;
+                }
+
+             dataAgeSalary.sort(compareAge);
+             
+             console.log(dataAgeSalary);
+             
+             /**
+              * Calculate the Average Age
+              */
+                var dataAgeSalaryAverage = [];
+                var sum = 0;
+                var count = 0;
+                var average;
+                var j = 0;
+              for (let i = 0; i < dataAgeSalary.length; i++) {
+                if(dataAgeSalary[i].x == dataAgeSalary[j].x){
+                    sum = sum + dataAgeSalary[i].y;
+                    count++;
+                }else{
+                    average = sum/count;
+                    console.log("Age "+dataAgeSalary[j].x+"is declared"+count+" times");
+                    
+                    /**
+                     * New Array with Average Salary according to Age
+                     */
+                    dataAgeSalaryAverage.push({
+                        x:dataAgeSalary[j].x,
+                        y:average
+                    });
+
+                    j=i;
+                    //we decrement the i so both of the i and j starts at the same time
+                    i--;
+                    /**
+                     * Restart the Average Count
+                     */
+                    average = 0; 
+                    count = 0;
+                    sum = 0;  
+                }
+              }
+              console.log(dataAgeSalaryAverage);  
+
             /**
-             * Sorting the array by writing the compare function
+              * Creating the chart line graph
+              */
+
+             var chart = new CanvasJS.Chart("chartGraphContainer", {
+                animationEnabled: true,
+                theme: "light2",
+                title:{
+                    text: "NST FRONT-END CHALLENGE LINE CHART"
+                },
+                axisX:{
+                    title: "Age",
+                    crosshair: {
+                        enabled: true,
+                        snapToDataPoint: true
+                    }
+                },
+                axisY: {
+                    title: "Salaries",
+                    crosshair: {
+                        enabled: true
+                    }
+                },
+                data: [{        
+                    type: "line",       
+                    dataPoints: dataAgeSalaryAverage
+                }]
+            });
+            chart.render();
+            
+              
+            /**
+             * Sorting the array by writing the compare function for the EyeColor
              */
 
-            function compare(a,b){
+            function compareEyeColor(a,b){
                 if(a.eyeColor < b.eyeColor)return -1;
                 else if(a.eyeColor > b.eyeColor) return 1;
                 else return 0;
             }
-            data.sort(compare);
+            data.sort(compareEyeColor);
+
 
             /**
              * Count the duplicates and add them to dataEyeColor Array
@@ -48,6 +151,8 @@ window.onload = function getData(){
                     value:count
                 });
              }
+             //console.log(dataEyeColor);
+             
              /**
               * Creating the chart pie
               */
@@ -68,13 +173,7 @@ window.onload = function getData(){
             // display the chart in the container
             chart.container('chartPieContainer');
 
-            chart.draw();
-
-            /**
-              * Creating the chart line graph
-              */
-
-            
+            chart.draw();            
         }
     }
     xhttp.open("GET","generated.json",true);
